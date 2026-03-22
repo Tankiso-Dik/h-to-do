@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.expo/
+.env
+*.tsbuildinfo
+dev-mobile-preview-after-fix.png
+mobile-home-after-fix.png
+mobile-home.png
+mobile-preview-route.png
+mobile-task-detail.png
+preview-mobile.png
+restored-today.png
+root-mobile.png
