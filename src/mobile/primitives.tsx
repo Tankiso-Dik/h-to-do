@@ -1,9 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { usePathname, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import type { PropsWithChildren, ReactNode } from "react";
-import { useState } from "react";
 import {
-  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -53,131 +51,40 @@ export function Screen({ children }: PropsWithChildren) {
 
 export function UtilityBar({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
-  const pathname = usePathname();
   const { colors, theme, toggleTheme } = useTheme();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const navItems: Array<{
-    href: "/" | "/tasks" | "/missed" | "/analytics" | "/lists";
-    icon: keyof typeof Ionicons.glyphMap;
-    label: string;
-  }> = [
-    { href: "/", icon: "sunny-outline", label: "My Day" },
-    { href: "/tasks", icon: "checkbox-outline", label: "Tasks" },
-    { href: "/missed", icon: "time-outline", label: "Missed" },
-    { href: "/analytics", icon: "pulse-outline", label: "Analytics" },
-    { href: "/lists", icon: "settings-outline", label: "Settings" }
-  ];
+  const supportCopy = compact
+    ? "Plan realistically"
+    : "Plan, notice, and adjust without backlog pressure.";
 
   return (
-    <>
-      <View style={styles.utilityRow}>
-        <Pressable
-          accessibilityLabel="Open sidebar"
-          onPress={() => setSidebarOpen(true)}
-          style={({ pressed }) => [styles.utilityIconButton, { opacity: pressed ? 0.72 : 1 }]}
-        >
-          <Ionicons color={colors.text} name="menu-outline" size={compact ? 19 : 21} />
-        </Pressable>
-
-        <View
-          style={[
-            styles.searchShell,
-            {
-              borderColor: colors.line
-            }
-          ]}
-        >
-          <Ionicons color={colors.textMuted} name="search-outline" size={16} />
-          <Text numberOfLines={1} style={[styles.searchLabel, { color: colors.textMuted }]}>
-            Search tasks and reflections
-          </Text>
-        </View>
-
-        <Pressable
-          accessibilityLabel="Toggle theme"
-          onPress={toggleTheme}
-          style={({ pressed }) => [styles.utilityIconButton, { opacity: pressed ? 0.72 : 1 }]}
-        >
-          <Ionicons
-            color={colors.text}
-            name={theme === "dark" ? "sunny-outline" : "moon-outline"}
-            size={compact ? 18 : 20}
-          />
-        </Pressable>
-
-        <Pressable
-          accessibilityLabel="Open settings"
-          onPress={() => router.push("/lists")}
-          style={({ pressed }) => [styles.utilityIconButton, { opacity: pressed ? 0.72 : 1 }]}
-        >
-          <Ionicons color={colors.text} name="settings-outline" size={compact ? 18 : 20} />
-        </Pressable>
+    <View style={styles.utilityRow}>
+      <View style={styles.utilityCopy}>
+        <SectionLabel>Task journal</SectionLabel>
+        <Text numberOfLines={1} style={[styles.utilityHint, { color: colors.textMuted }]}>
+          {supportCopy}
+        </Text>
       </View>
 
-      <Modal
-        animationType="fade"
-        onRequestClose={() => setSidebarOpen(false)}
-        transparent
-        visible={sidebarOpen}
+      <Pressable
+        accessibilityLabel="Toggle theme"
+        onPress={toggleTheme}
+        style={({ pressed }) => [styles.utilityIconButton, { opacity: pressed ? 0.72 : 1 }]}
       >
-        <View style={styles.sidebarRoot}>
-          <Pressable onPress={() => setSidebarOpen(false)} style={styles.sidebarOverlay} />
-          <View
-            style={[
-              styles.sidebarPanel,
-              {
-                backgroundColor: colors.surface,
-                borderColor: colors.line
-              }
-            ]}
-          >
-            <View style={styles.sidebarHeader}>
-              <SectionLabel>Navigation</SectionLabel>
-              <Text style={[styles.sidebarTitle, { color: colors.text }]}>Sidebar</Text>
-            </View>
+        <Ionicons
+          color={colors.text}
+          name={theme === "dark" ? "sunny-outline" : "moon-outline"}
+          size={compact ? 18 : 20}
+        />
+      </Pressable>
 
-            <View style={styles.sidebarStack}>
-              {navItems.map((item) => {
-                const selected =
-                  pathname === item.href ||
-                  (item.href !== "/" && pathname.startsWith(item.href));
-
-                return (
-                  <Pressable
-                    key={item.href}
-                    onPress={() => {
-                      setSidebarOpen(false);
-                      router.push(item.href);
-                    }}
-                    style={({ pressed }) => [
-                      styles.sidebarItem,
-                      {
-                        borderColor: selected ? colors.text : colors.line,
-                        opacity: pressed ? 0.8 : 1
-                      }
-                    ]}
-                  >
-                    <Ionicons
-                      color={selected ? colors.text : colors.textMuted}
-                      name={item.icon}
-                      size={18}
-                    />
-                    <Text
-                      style={[
-                        styles.sidebarLabel,
-                        { color: selected ? colors.text : colors.textMuted }
-                      ]}
-                    >
-                      {item.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-        </View>
-      </Modal>
-    </>
+      <Pressable
+        accessibilityLabel="Open more"
+        onPress={() => router.push("/lists")}
+        style={({ pressed }) => [styles.utilityIconButton, { opacity: pressed ? 0.72 : 1 }]}
+      >
+        <Ionicons color={colors.text} name="ellipsis-horizontal" size={compact ? 18 : 20} />
+      </Pressable>
+    </View>
   );
 }
 
@@ -199,12 +106,9 @@ export function Header({
       <View style={styles.headerCopy}>
         <View style={styles.headerLead}>
           <Ionicons color={colors.accent} name={icon} size={18} />
-          <Text style={[styles.headerLeadText, { color: colors.textMuted }]}>Journal</Text>
+          <Text style={[styles.headerLeadText, { color: colors.textMuted }]}>Task journal</Text>
         </View>
-        <View style={styles.titleRow}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>{title}</Text>
-          <Text style={[styles.ellipsis, { color: colors.textMuted }]}>...</Text>
-        </View>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>{title}</Text>
         {subtitle ? (
           <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>{subtitle}</Text>
         ) : null}
@@ -266,7 +170,7 @@ export function ActionButton({
       ? {
           backgroundColor: colors.accent,
           borderColor: colors.accent,
-          textColor: "#ffffff"
+          textColor: colors.background
         }
       : tone === "ghost"
         ? {
@@ -418,71 +322,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingTop: 10,
     paddingBottom: 120,
-    gap: 18
+    gap: 22
   },
   utilityRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10
+    gap: 12
+  },
+  utilityCopy: {
+    flex: 1,
+    gap: 3
+  },
+  utilityHint: {
+    fontSize: 13,
+    lineHeight: 18
   },
   utilityIconButton: {
     width: 26,
     height: 26,
     alignItems: "center",
     justifyContent: "center"
-  },
-  searchShell: {
-    flex: 1,
-    minHeight: 42,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 4,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8
-  },
-  sidebarRoot: {
-    flex: 1,
-    flexDirection: "row"
-  },
-  sidebarOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.32)"
-  },
-  sidebarPanel: {
-    width: 250,
-    borderRightWidth: 1,
-    paddingHorizontal: 16,
-    paddingTop: 48,
-    paddingBottom: 24,
-    gap: 16
-  },
-  sidebarHeader: {
-    gap: 6
-  },
-  sidebarTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    letterSpacing: -0.4
-  },
-  sidebarStack: {
-    gap: 8
-  },
-  sidebarItem: {
-    minHeight: 44,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 4,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10
-  },
-  sidebarLabel: {
-    fontSize: 15,
-    fontWeight: "600"
-  },
-  searchLabel: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: "600"
   },
   headerRow: {
     flexDirection: "row",
@@ -492,7 +351,7 @@ const styles = StyleSheet.create({
   },
   headerCopy: {
     flex: 1,
-    gap: 4
+    gap: 6
   },
   headerLead: {
     flexDirection: "row",
@@ -504,24 +363,16 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     letterSpacing: 0.3
   },
-  titleRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10
-  },
   headerTitle: {
-    fontSize: 30,
+    fontSize: 32,
+    lineHeight: 36,
     fontWeight: "800",
-    letterSpacing: -0.8
-  },
-  ellipsis: {
-    fontSize: 22,
-    lineHeight: 34,
-    fontWeight: "600"
+    letterSpacing: -1
   },
   headerSubtitle: {
     fontSize: 15,
-    lineHeight: 22
+    lineHeight: 22,
+    maxWidth: 540
   },
   headerRight: {
     paddingTop: 2
@@ -540,7 +391,7 @@ const styles = StyleSheet.create({
   },
   bodyText: {
     fontSize: 15,
-    lineHeight: 22
+    lineHeight: 23
   },
   button: {
     minHeight: 40,
@@ -551,7 +402,7 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   },
   buttonLabel: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "600"
   },
   chip: {
@@ -564,7 +415,8 @@ const styles = StyleSheet.create({
   },
   chipLabel: {
     fontSize: 13,
-    fontWeight: "600"
+    fontWeight: "600",
+    letterSpacing: 0.2
   },
   field: {
     gap: 8

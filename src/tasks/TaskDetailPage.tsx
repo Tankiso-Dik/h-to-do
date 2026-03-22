@@ -105,7 +105,7 @@ export function TaskDetailPage() {
       <Screen>
         <UtilityBar compact />
         <EmptyState
-          body="That task template does not exist in local storage or today’s instances."
+          body="That task template does not exist in local storage or today's instances."
           title="Task not found"
         />
         <ActionButton label="Back" onPress={() => router.back()} />
@@ -114,6 +114,7 @@ export function TaskDetailPage() {
   }
 
   const outcomeDetail = taskStatusDetail(instance.status, instance);
+  const heroMeta = [instance.scheduledTime, template.recurrenceLabel, instance.reminderLabel].join(" · ");
 
   return (
     <Screen>
@@ -122,10 +123,11 @@ export function TaskDetailPage() {
       <Card>
         <View style={styles.heroLead}>
           <Ionicons color={colors.accent} name="list-outline" size={16} />
-          <SectionLabel>Task template</SectionLabel>
+          <SectionLabel>Today task</SectionLabel>
         </View>
 
         <Text style={[styles.heroTitle, { color: colors.text }]}>{template.title}</Text>
+        <Text style={[styles.heroMeta, { color: colors.textMuted }]}>{heroMeta}</Text>
 
         <View style={styles.heroActions}>
           <TaskStatusPill status={instance.status} />
@@ -151,9 +153,11 @@ export function TaskDetailPage() {
       </View>
 
       <Card>
-        <SectionLabel>Daily outcome</SectionLabel>
-        <Text style={[styles.blockTitle, { color: colors.text }]}>Update today&apos;s instance</Text>
-        {outcomeDetail ? <BodyText muted>{outcomeDetail}</BodyText> : null}
+        <SectionLabel>Today move</SectionLabel>
+        <Text style={[styles.blockTitle, { color: colors.text }]}>Choose the next outcome</Text>
+        <BodyText muted>
+          {outcomeDetail ?? "Log what happened without turning this task into backlog pressure."}
+        </BodyText>
 
         <View style={styles.chipRow}>
           <ChoiceChip
@@ -178,10 +182,10 @@ export function TaskDetailPage() {
         {actionMode === "complete" ? (
           <View style={styles.formStack}>
             <Field
-              label="Completion note"
+              label="What helped this land?"
               multiline
               onChangeText={(comment) => setCompleteForm((current) => ({ ...current, comment }))}
-              placeholder="What got it done?"
+              placeholder="Optional note about what made this workable."
               value={completeForm.comment}
             />
             <Field
@@ -216,10 +220,10 @@ export function TaskDetailPage() {
               value={rescheduleForm.scheduledTime}
             />
             <Field
-              label="Reason"
+              label="What changed?"
               multiline
               onChangeText={(reason) => setRescheduleForm((current) => ({ ...current, reason }))}
-              placeholder="Why did this move?"
+              placeholder="Optional reason for shifting this task."
               value={rescheduleForm.reason}
             />
             <Field
@@ -282,15 +286,13 @@ export function TaskDetailPage() {
 
       <Card>
         <SectionLabel>Reminder</SectionLabel>
-        <Text style={[styles.blockTitle, { color: colors.text }]}>Today&apos;s notification timing</Text>
+        <Text style={[styles.blockTitle, { color: colors.text }]}>Reminder timing</Text>
         <BodyText>
           {instance.reminderAt
-            ? `${instance.reminderLabel} · ${formatReminderTimestamp(instance.reminderAt)}`
+            ? instance.reminderLabel + " · " + formatReminderTimestamp(instance.reminderAt)
             : "No reminder scheduled for this task."}
         </BodyText>
-        {instance.reminderDismissedAt ? (
-          <BodyText muted>Today&apos;s reminder has been dismissed.</BodyText>
-        ) : null}
+        {instance.reminderDismissedAt ? <BodyText muted>Today's reminder has been dismissed.</BodyText> : null}
         {(instance.status === "scheduled" || instance.status === "rescheduled") &&
         instance.reminderAt ? (
           <View style={styles.actionRow}>
@@ -398,9 +400,9 @@ export function TaskDetailPage() {
 
       <Card>
         <SectionLabel>Instance reflection</SectionLabel>
-        <Text style={[styles.blockTitle, { color: colors.text }]}>Today&apos;s note</Text>
+        <Text style={[styles.blockTitle, { color: colors.text }]}>Today note</Text>
         <BodyText muted>
-          This belongs to the occurrence on {formatLongDate(new Date())}, not to the template itself.
+          This belongs to the occurrence on {formatLongDate(new Date())}, not the task template as a whole.
         </BodyText>
         <Field
           label="Reflection"
@@ -410,7 +412,7 @@ export function TaskDetailPage() {
           value={reflection}
         />
         <ActionButton
-          label="Save today's reflection"
+          label="Save today reflection"
           onPress={() => updateInstanceReflection(template.id, reflection, todayKey)}
         />
       </Card>
@@ -426,7 +428,6 @@ function DetailInfoCard({ label, value }: { label: string; value: string }) {
       style={[
         styles.metaCard,
         {
-          backgroundColor: colors.surface,
           borderColor: colors.line
         }
       ]}
@@ -449,6 +450,10 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: -0.8
   },
+  heroMeta: {
+    fontSize: 14,
+    lineHeight: 20
+  },
   heroActions: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -459,9 +464,8 @@ const styles = StyleSheet.create({
     gap: 10
   },
   metaCard: {
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingVertical: 12,
     gap: 6
   },
   metaLabel: {

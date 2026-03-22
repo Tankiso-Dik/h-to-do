@@ -15,9 +15,8 @@ import { useTaskStore } from "./store";
 
 export function SuggestionsPage() {
   const { colors } = useTheme();
-  const { getMissedTasks, getTodayTasks } = useTaskStore();
+  const { getMissedTasks } = useTaskStore();
   const { summary, cards, source, status, error, metrics, snapshot } = useSuggestions();
-  const todayTasks = getTodayTasks();
   const missedTasks = getMissedTasks().slice(0, 4);
 
   const issues = useMemo(() => {
@@ -81,100 +80,99 @@ export function SuggestionsPage() {
     snapshot.slippingTask
   ]);
 
+  const coachingSignals = useMemo(
+    () => [
+      {
+        id: "best-window",
+        label: "Best window",
+        title: snapshot.bestWindow ?? "Still learning",
+        detail: "The time range where completions are landing most reliably."
+      },
+      {
+        id: "load-shape",
+        label: "Today's load",
+        title: `${metrics.dueTodayCount} open, ${metrics.completedTodayCount} done`,
+        detail: "A quick read on how heavy today feels right now."
+      },
+      {
+        id: "confidence",
+        label: "Read quality",
+        title: source === "ai" ? "AI-assisted" : "Local pattern read",
+        detail:
+          status === "error"
+            ? "The app fell back to local guidance and is being transparent about it."
+            : "The summary is grounded in recent behavior rather than generic advice."
+      }
+    ],
+    [metrics.completedTodayCount, metrics.dueTodayCount, snapshot.bestWindow, source, status]
+  );
+
   return (
     <Screen>
       <UtilityBar />
       <Header
-        icon="pulse-outline"
-        title="Analytics"
-        subtitle="Patterns, pressure points, and quiet signals from the way your tasks are moving."
+        icon="sparkles-outline"
+        title="Suggestions"
+        subtitle="A practical read on what to adjust next, not a report card."
       />
 
       <Card>
         <View style={styles.summaryHeader}>
           <View style={styles.summaryCopy}>
-            <SectionLabel>Current read</SectionLabel>
+            <SectionLabel>Today's read</SectionLabel>
             <Text style={[styles.summaryText, { color: colors.text }]}>{summary}</Text>
           </View>
-          <View
-            style={[
-              styles.sourcePill,
-              {
-                borderColor: colors.line
-              }
-            ]}
-          >
-            <Text style={[styles.sourceText, { color: source === "ai" ? colors.accent : colors.textMuted }]}>
+          <View style={[styles.sourcePill, { borderColor: colors.line }]}> 
+            <Text style={[styles.sourceText, { color: source === "ai" ? colors.accent : colors.textMuted }]}> 
               {status === "loading"
                 ? "Refreshing"
                 : status === "error"
                   ? "Fallback"
                   : source === "ai"
-                    ? "AI summary"
-                    : "Local summary"}
+                    ? "AI guidance"
+                    : "Local guidance"}
             </Text>
           </View>
         </View>
         {error ? <BodyText muted>{error}</BodyText> : null}
       </Card>
 
-      <View style={styles.metricGrid}>
-        <MetricCard label="Completion rate" value={`${Math.round(metrics.completionRate * 100)}%`} />
-        <MetricCard label="Open today" value={`${metrics.dueTodayCount}`} />
-        <MetricCard label="Completed today" value={`${metrics.completedTodayCount}`} />
-        <MetricCard label="Recent misses" value={`${metrics.missedCount}`} />
-      </View>
-
-      <View style={styles.stack}>
-        {cards.map((card) => (
-          <Card key={card.id}>
-            <SectionLabel>Signal</SectionLabel>
-            <Text style={[styles.cardTitle, { color: colors.text }]}>{card.title}</Text>
-            <BodyText muted>{card.body}</BodyText>
-          </Card>
-        ))}
-      </View>
-
       <Card>
-        <SectionLabel>Issues</SectionLabel>
-        <Text style={[styles.blockTitle, { color: colors.text }]}>Pressure points worth fixing</Text>
+        <SectionLabel>What to try</SectionLabel>
+        <Text style={[styles.blockTitle, { color: colors.text }]}>Start with the next practical shift</Text>
         <View style={styles.stack}>
-          {issues.map((issue) => (
-            <InfoRow
-              detail={issue.detail}
-              key={issue.id}
-              label={issue.label}
-              value={issue.title}
-            />
+          {cards.slice(0, 2).map((card) => (
+            <View key={card.id} style={[styles.guidanceRow, { borderColor: colors.line }]}> 
+              <Text style={[styles.cardTitle, { color: colors.text }]}>{card.title}</Text>
+              <BodyText muted>{card.body}</BodyText>
+            </View>
           ))}
         </View>
       </Card>
 
       <Card>
-        <SectionLabel>Pattern signals</SectionLabel>
-        <Text style={[styles.blockTitle, { color: colors.text }]}>What the app can already see</Text>
+        <SectionLabel>Signals backing it up</SectionLabel>
+        <Text style={[styles.blockTitle, { color: colors.text }]}>Why this read is showing up</Text>
         <View style={styles.stack}>
-          <InfoRow
-            detail="When completions land most reliably"
-            label="Best window"
-            value={snapshot.bestWindow ?? "Still learning"}
-          />
-          <InfoRow
-            detail="The task most often missed or moved"
-            label="Slipping task"
-            value={snapshot.slippingTask ?? "None yet"}
-          />
-          <InfoRow
-            detail="The day that carried the heaviest load"
-            label="Overloaded day"
-            value={snapshot.overloadedDate ? formatShortDate(snapshot.overloadedDate) : "No spike"}
-          />
+          {coachingSignals.map((signal) => (
+            <InfoRow key={signal.id} detail={signal.detail} label={signal.label} value={signal.title} />
+          ))}
+        </View>
+      </Card>
+
+      <Card>
+        <SectionLabel>Pressure points</SectionLabel>
+        <Text style={[styles.blockTitle, { color: colors.text }]}>Patterns worth reshaping</Text>
+        <View style={styles.stack}>
+          {issues.map((issue) => (
+            <InfoRow key={issue.id} detail={issue.detail} label={issue.label} value={issue.title} />
+          ))}
         </View>
       </Card>
 
       <Card>
         <SectionLabel>Recent misses</SectionLabel>
-        <Text style={[styles.blockTitle, { color: colors.text }]}>What needs redesign, not guilt</Text>
+        <Text style={[styles.blockTitle, { color: colors.text }]}>Signal for redesign, not guilt</Text>
         <View style={styles.stack}>
           {missedTasks.length > 0 ? (
             missedTasks.map((entry) => (
@@ -194,19 +192,6 @@ export function SuggestionsPage() {
   );
 }
 
-function MetricCard({ label, value }: { label: string; value: string }) {
-  const { colors } = useTheme();
-
-  return (
-    <View style={styles.metricCard}>
-      <Card>
-        <SectionLabel>{label}</SectionLabel>
-        <Text style={[styles.metricValue, { color: colors.text }]}>{value}</Text>
-      </Card>
-    </View>
-  );
-}
-
 function InfoRow({
   label,
   detail,
@@ -219,14 +204,7 @@ function InfoRow({
   const { colors } = useTheme();
 
   return (
-    <View
-      style={[
-        styles.infoRow,
-        {
-          borderColor: colors.line
-        }
-      ]}
-    >
+    <View style={[styles.infoRow, { borderColor: colors.line }]}> 
       <View style={styles.infoCopy}>
         <Text style={[styles.infoLabel, { color: colors.text }]}>{label}</Text>
         <Text style={[styles.infoDetail, { color: colors.textMuted }]}>{detail}</Text>
@@ -244,43 +222,36 @@ const styles = StyleSheet.create({
     gap: 8
   },
   summaryText: {
-    fontSize: 18,
-    lineHeight: 26,
+    fontSize: 20,
+    lineHeight: 28,
     fontWeight: "700"
   },
   sourcePill: {
     alignSelf: "flex-start",
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderRadius: 999,
-    paddingHorizontal: 0,
     paddingVertical: 4
   },
   sourceText: {
     fontSize: 12,
     fontWeight: "700"
   },
-  metricGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10
-  },
   stack: {
     gap: 10
   },
-  metricCard: {
-    width: "48%"
-  },
-  metricValue: {
-    fontSize: 28,
-    fontWeight: "800"
-  },
   cardTitle: {
     fontSize: 18,
+    lineHeight: 24,
     fontWeight: "700"
   },
   blockTitle: {
     fontSize: 20,
     fontWeight: "700"
+  },
+  guidanceRow: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingVertical: 10,
+    gap: 6
   },
   infoRow: {
     borderBottomWidth: StyleSheet.hairlineWidth,
@@ -299,7 +270,8 @@ const styles = StyleSheet.create({
     lineHeight: 20
   },
   infoValue: {
-    fontSize: 13,
+    fontSize: 14,
+    lineHeight: 19,
     fontWeight: "600"
   }
 });

@@ -24,8 +24,8 @@ export function ListsPage() {
       <UtilityBar />
       <Header
         icon="settings-outline"
-        title="Settings"
-        subtitle="Quiet controls and notification access."
+        title="More"
+        subtitle="Support controls, archived tasks, and notification access."
         right={<SyncStatusBadge />}
       />
 

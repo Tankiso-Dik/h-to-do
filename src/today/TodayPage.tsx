@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import {
   Header,
   Screen,
@@ -10,7 +10,6 @@ import {
 } from "../mobile/primitives";
 import { formatLongDate } from "../lib/date";
 import { QuickAddCard } from "../tasks/QuickAddCard";
-import { SortMenuButton } from "../tasks/SortMenuButton";
 import { sortTaskEntries, type TaskSort } from "../tasks/sort";
 import { useTaskStore } from "../tasks/store";
 import { TaskRow } from "../tasks/TaskRow";
@@ -30,20 +29,26 @@ export function TodayPage() {
   return (
     <Screen>
       <UtilityBar />
-      <Header
-        icon="sunny-outline"
-        title="My Day"
-        subtitle={formatLongDate(new Date())}
-        right={<SortMenuButton value={sortBy} onChange={setSortBy} />}
-      />
-
-      <BodyText muted>
-        {tasks.length > 0
-          ? `${morningCount} front-loaded before noon, ${completedCount} already completed today.`
-          : "No tasks yet. Start with one small commitment you can actually keep."}
-      </BodyText>
+      <Header icon="sunny-outline" title="My Day" subtitle={formatLongDate(new Date())} />
 
       <QuickAddCard />
+
+      <View style={styles.guidanceRow}>
+        <BodyText muted>
+          {tasks.length > 0
+            ? `${morningCount} scheduled before noon. ${completedCount} already landed. Keep the next step light enough to finish.`
+            : "Start with one small task that deserves a real place in the day."}
+        </BodyText>
+        <Pressable
+          accessibilityLabel="Toggle task sorting"
+          onPress={() => setSortBy(sortBy === "time" ? "alphabetical" : "time")}
+          style={({ pressed }) => [styles.sortLink, { opacity: pressed ? 0.72 : 1 }]}
+        >
+          <Text style={[styles.sortLabel, { color: colors.textMuted }]}> 
+            {sortBy === "time" ? "Sort by time" : "Sort A-Z"}
+          </Text>
+        </Pressable>
+      </View>
 
       {activeTasks.length > 0 ? (
         <View style={styles.stack}>
@@ -62,7 +67,7 @@ export function TodayPage() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <SectionLabel>Completed</SectionLabel>
-            <Text style={[styles.sectionMeta, { color: colors.textMuted }]}>
+            <Text style={[styles.sectionMeta, { color: colors.textMuted }]}> 
               {completedTasks.length} finished today
             </Text>
           </View>
@@ -80,6 +85,16 @@ export function TodayPage() {
 const styles = StyleSheet.create({
   stack: {
     gap: 10
+  },
+  guidanceRow: {
+    gap: 8
+  },
+  sortLink: {
+    alignSelf: "flex-start"
+  },
+  sortLabel: {
+    fontSize: 13,
+    fontWeight: "600"
   },
   section: {
     gap: 10

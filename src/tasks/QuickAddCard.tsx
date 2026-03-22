@@ -38,13 +38,31 @@ export function QuickAddCard() {
     [draft.preferredTime, draft.recurrenceLabel, draft.reminderLabel]
   );
 
+  const submit = () => {
+    if (!canSubmit) {
+      return;
+    }
+
+    const templateId = createTaskTemplate({
+      ...draft,
+      title: draft.title.trim(),
+      note: draft.note.trim()
+    });
+
+    setDraft(defaultDraft());
+    setCustomTime(defaultDraft().preferredTime);
+    router.push(`/task/${templateId}`);
+  };
+
   return (
     <>
       <Card>
-        <View style={[styles.inputRow, { borderColor: colors.line }]}>
+        <SectionLabel>Quick capture</SectionLabel>
+        <View style={[styles.inputRow, { borderColor: colors.line }]}> 
           <View style={[styles.circle, { borderColor: colors.accent }]} />
           <TextInput
             onChangeText={(title) => setDraft((current) => ({ ...current, title }))}
+            onSubmitEditing={submit}
             placeholder="Add a task"
             placeholderTextColor={colors.textMuted}
             style={[styles.input, { color: colors.text }]}
@@ -52,39 +70,29 @@ export function QuickAddCard() {
           />
         </View>
 
-        <Text style={[styles.summary, { color: colors.textMuted }]}>{summary}</Text>
+        <Text style={[styles.summary, { color: colors.textMuted }]}> 
+          {canSubmit ? summary : "Title first. Timing and reminders can stay lightweight."}
+        </Text>
 
-        <View style={[styles.footerRow, { borderColor: colors.line }]}>
+        <View style={[styles.footerRow, { borderColor: colors.line }]}> 
           <IconTrigger icon="calendar-outline" onPress={() => setActivePanel("time")} />
           <IconTrigger icon="notifications-outline" onPress={() => setActivePanel("reminder")} />
           <IconTrigger icon="repeat-outline" onPress={() => setActivePanel("repeat")} />
           <Pressable
             disabled={!canSubmit}
-            onPress={() => {
-              if (!canSubmit) {
-                return;
-              }
-
-              const templateId = createTaskTemplate({
-                ...draft,
-                title: draft.title.trim(),
-                note: draft.note.trim()
-              });
-
-              setDraft(defaultDraft());
-              setCustomTime(defaultDraft().preferredTime);
-              router.push(`/task/${templateId}`);
-            }}
+            onPress={submit}
             style={({ pressed }) => [
               styles.addButton,
               {
                 borderColor: colors.line,
-                backgroundColor: colors.surfaceMuted,
+                backgroundColor: canSubmit ? colors.accent : colors.surfaceMuted,
                 opacity: !canSubmit ? 0.45 : pressed ? 0.82 : 1
               }
             ]}
           >
-            <Text style={[styles.addLabel, { color: colors.text }]}>Add</Text>
+            <Text style={[styles.addLabel, { color: canSubmit ? colors.background : colors.text }]}> 
+              Save today
+            </Text>
           </Pressable>
         </View>
       </Card>
@@ -104,7 +112,7 @@ export function QuickAddCard() {
             {activePanel === "time" ? (
               <>
                 <SectionLabel>Time</SectionLabel>
-                <Text style={[styles.sheetTitle, { color: colors.text }]}>Choose when this task happens</Text>
+                <Text style={[styles.sheetTitle, { color: colors.text }]}>Choose when this belongs in the day</Text>
                 <View style={styles.optionRow}>
                   {quickTimes.map((time) => (
                     <ChoiceChip
@@ -229,8 +237,9 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 17,
-    fontWeight: "500",
+    fontSize: 19,
+    lineHeight: 24,
+    fontWeight: "600",
     paddingVertical: 0
   },
   summary: {
@@ -253,9 +262,9 @@ const styles = StyleSheet.create({
   addButton: {
     marginLeft: "auto",
     borderWidth: 1,
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 9
   },
   addLabel: {
     fontSize: 14,
@@ -279,8 +288,8 @@ const styles = StyleSheet.create({
     gap: 14
   },
   sheetTitle: {
-    fontSize: 22,
-    lineHeight: 28,
+    fontSize: 20,
+    lineHeight: 26,
     fontWeight: "700"
   },
   optionRow: {

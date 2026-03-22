@@ -35,15 +35,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="tasks"
-        options={{
-          title: "Tasks",
-          tabBarIcon: ({ color, size, focused }) => (
-            <TabIcon color={color} focused={focused} name="checkbox-outline" size={size} />
-          )
-        }}
-      />
-      <Tabs.Screen
         name="missed"
         options={{
           title: "Missed",
@@ -55,19 +46,39 @@ export default function TabLayout() {
       <Tabs.Screen
         name="analytics"
         options={{
-          title: "Analytics",
+          title: "Suggestions",
           tabBarIcon: ({ color, size, focused }) => (
-            <TabIcon color={color} focused={focused} name="pulse-outline" size={size} />
+            <TabIcon color={color} focused={focused} name="sparkles-outline" size={size} />
+          )
+        }}
+      />
+      <Tabs.Screen
+        name="chat"
+        options={{
+          title: "Chat",
+          tabBarIcon: ({ color, size, focused }) => (
+            <TabIcon
+              color={color}
+              focused={focused}
+              name="chatbubble-ellipses-outline"
+              size={size}
+            />
           )
         }}
       />
       <Tabs.Screen
         name="lists"
         options={{
-          title: "Settings",
+          title: "More",
           tabBarIcon: ({ color, size, focused }) => (
             <TabIcon color={color} focused={focused} name="settings-outline" size={size} />
           )
+        }}
+      />
+      <Tabs.Screen
+        name="tasks"
+        options={{
+          href: null
         }}
       />
     </Tabs>
@@ -92,7 +103,7 @@ function TabIcon({
       style={{
         minWidth: 42,
         minHeight: 34,
-        borderRadius: 6,
+        borderRadius: 999,
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: focused ? colors.accentMuted : "transparent"

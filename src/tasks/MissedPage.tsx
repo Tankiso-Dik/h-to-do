@@ -23,7 +23,7 @@ export function MissedPage() {
       <Header
         icon="time-outline"
         title="Missed"
-        subtitle={`Historical review, not punishment. ${missed.length} logged misses so far.`}
+        subtitle={`Historical review, not punishment. ${missed.length} missed instance${missed.length === 1 ? "" : "s"} logged so far.`}
       />
 
       {missed.length === 0 ? (
@@ -38,18 +38,18 @@ export function MissedPage() {
               <View style={styles.headerCopy}>
                 <Text style={[styles.title, { color: colors.text }]}>{entry.template.title}</Text>
                 <Text style={[styles.meta, { color: colors.textMuted }]}>
-                  {formatShortDate(entry.instance.date)} at {entry.instance.scheduledTime}
+                  {formatShortDate(entry.instance.date)} · {entry.instance.scheduledTime}
                 </Text>
               </View>
 
               <View style={styles.reasonBlock}>
-                <SectionLabel>Reason</SectionLabel>
+                <SectionLabel>What got in the way</SectionLabel>
                 <BodyText>{entry.instance.missedReason || "No reason logged."}</BodyText>
               </View>
 
               {entry.instance.reflection ? (
                 <View style={styles.reasonBlock}>
-                  <SectionLabel>Reflection</SectionLabel>
+                  <SectionLabel>What to notice next time</SectionLabel>
                   <BodyText muted>{entry.instance.reflection}</BodyText>
                 </View>
               ) : null}
